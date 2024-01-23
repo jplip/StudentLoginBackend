@@ -36,7 +36,7 @@ def index():
 def table():
     return render_template("table.html")
 
-@app.route('/api/users/create', methods=['OPTIONS'])
+@app.route('/api/users_teach/create', methods=['OPTIONS'])
 def handle_preflight():
     response = jsonify({'message': 'Preflight request received'})
     response.headers.add('Access-Control-Allow-Origin', 'https://jplip.github.io')
@@ -44,7 +44,7 @@ def handle_preflight():
     response.headers.add('Access-Control-Allow-Methods', 'POST')
     return response, 200
 
-@app.route('/api/users/', methods=['POST'])
+@app.route('/api/users_teach/', methods=['POST'])
 def handle_more_preflight():
     response = jsonify({'message': 'Preflight request received'})
     response.headers.add('Access-Control-Allow-Origin', 'https://jplip.github.io')

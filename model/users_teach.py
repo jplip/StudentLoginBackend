@@ -9,8 +9,8 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-class User(db.Model):
-    __tablename__ = 'users'  # table name is plural, class name is singular
+class User_teach(db.Model):
+    __tablename__ = 'users_teach'  # table name is plural, class name is singular
 
     # Define the User schema with "vars" from object
     id = db.Column(db.Integer, primary_key=True)
@@ -18,6 +18,8 @@ class User(db.Model):
     _uid = db.Column(db.String(255), unique=True, nullable=False)
     _password = db.Column(db.String(255), unique=False, nullable=False)
     _dob = db.Column(db.String)
+    
+
 
 
 #If When I change the schema (aka add a field)….  I delete the .db file as it will generate when it does not exist.
@@ -161,7 +163,7 @@ def initUsers():
 
         # Add users to the database session with duplicate _uid handling
         for user_data in users_data:
-            existing_user = User.query.filter_by(_uid=user_data['uid']).first()
+            existing_user = User_teach.query.filter_by(_uid=user_data['uid']).first()
 
             if existing_user:
                 # Handle the case where the user already exists
@@ -173,7 +175,7 @@ def initUsers():
                 )
             else:
                 # Proceed with inserting the new user
-                new_user = User(
+                new_user = User_teach(
                     name=user_data['name'],
                     uid=user_data['uid'],
                     password=user_data['password'],
