@@ -6,11 +6,11 @@ from flask import render_template, jsonify # import render_template from "public
 # import "packages" from "this" project
 from __init__ import app,db  # Definitions initialization
 from model.users import initUsers
-
+from model.users_teach import initUsers
 
 # setup APIs
 from api.user import user_api # Blueprint import api definition
-
+from api.user_teach import user_api
 
 # setup App pages
 from projects.projects import app_projects # Blueprint directory import projects definition
