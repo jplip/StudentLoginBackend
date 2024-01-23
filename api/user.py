@@ -3,7 +3,9 @@ from flask import Blueprint, request, jsonify,  make_response
 from flask_restful import Api, Resource # used for REST API building
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.security import check_password_hash
-
+from flask import request, Response, current_app
+from flask_restful import Resource
+import jwt
 
 from datetime import datetime
 
@@ -133,52 +135,90 @@ class UserAPI:
             # failure returns error
             return {'message': f'Processed {name}, either a format error or User ID {uid} is duplicate'}, 400
 
-        
+   
+
+# ... (previous code)
+ 
+# ... (previous code)
     class _Security(Resource):
-
         def post(self):
-            ''' Read data for json body '''
-            body = request.get_json()
-            
-            ''' Get Data '''
-            uid = body.get('uid')
-            if uid is None or len(uid) < 2:
-                return {'message': f'User ID is missing, or is less than 2 characters'}, 400
-            password = body.get('password')
-            
-            ''' Find user '''
-            user = User.query.filter_by(_uid=uid).first()
-            if user is None or not user.is_password(password):
-                return {'message': f"Invalid user id or password"}, 400
-            
-            ''' authenticated user '''
-            login_user(user)
-            return jsonify(user.read())
-        
-    # class LoginAPI(Resource):
-    #     def post(self):
-    #         data = request.get_json()
+            try:
+                body = request.get_json()
 
-    #         # Retrieve uid and password from the request data
-    #         uid = data.get('uid')
-    #         password = data.get('password')
+                if not body:
+                    return jsonify({
+                        "message": "Please provide user details",
+                        "data": None,
+                        "error": "Bad request"
+                    }), 400
 
-    #         # Check if uid and password are provided
-    #         if not uid or not password:
-    #             response = {'message': 'Invalid credentials'}
-    #             return make_response(jsonify(response), 401)
+                uid = body.get('uid')
+                password = body.get('password')
 
-    #         # Retrieve user by uid from the database
-    #         user = User.query.filter_by(_uid=uid).first()
+                if uid is None or password is None:
+                    return jsonify({'message': 'User ID or password is missing'}), 400
 
-    #         # Check if the user exists and the password is correct
-    #         if user and user.is_password(password):
-    #             # Perform login operations here (if needed)
+                user = User.query.filter_by(_uid=uid).first()
+
+                if not user or not user.is_password(password):
+                    return jsonify({'message': "Invalid user ID or password"}), 400
+
+                token = self.generate_token(user)
+
+                # Additional response data
                 
-    #             return make_response(jsonify(response), 200)
+                print("User Object:", user)
+                response_data = {
+                    "message": f"Authentication for {user._uid} successful",
+                    "data": {
+                        "jwt": token,
+                        "user": {
+                    'name': user.name,
+                    'id': user.id
+                }
+                    }
+                }
 
-    #         response = {'message': 'Invalid UID or password'}
-    #         return make_response(jsonify(response), 401)
+                resp = jsonify(response_data)
+                resp.set_cookie("jwt", token,
+                                max_age=3600,
+                                secure=True,
+                                httponly=True,
+                                path='/'
+                                )
+
+                return resp
+
+            except Exception as e:
+                return jsonify({
+                    "message": "Something went wrong!",
+                    "error": str(e),
+                    "data": None
+                }), 500
+
+        def generate_token(self, user):
+            try:
+                token = jwt.encode(
+                    {"_uid": user._uid},
+                    current_app.config["SECRET_KEY"],
+                    algorithm="HS256"
+                )
+                return token
+            except Exception as e:
+                return jsonify({
+                    "error": "Something went wrong during token generation",
+                    "message": str(e)
+                }), 500
+
+
+
+
+     
+
+
+    
+
+        
     class LoginAPI(Resource):
         def post(self):
             data = request.get_json()
@@ -228,8 +268,6 @@ class UserAPI:
     api.add_resource(_CRUD, '/')
     api.add_resource(_UD, '/<int:user_id>')
     api.add_resource(_Security, '/authenticate')
-    api.add_resource(LoginAPI, '/login')
-    api.add_resource(LogoutAPI, '/logout')
     api.add_resource(_Create, '/create')
     
     

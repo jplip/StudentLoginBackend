@@ -6,11 +6,11 @@ from flask import render_template, jsonify # import render_template from "public
 # import "packages" from "this" project
 from __init__ import app,db  # Definitions initialization
 from model.users import initUsers
-from model.users_teach import initUsers
+
 
 # setup APIs
 from api.user import user_api # Blueprint import api definition
-from api.user_teach import user_api
+
 
 # setup App pages
 from projects.projects import app_projects # Blueprint directory import projects definition
@@ -36,7 +36,7 @@ def index():
 def table():
     return render_template("table.html")
 
-@app.route('/api/users_teach/create', methods=['OPTIONS'])
+@app.route('/api/users/create', methods=['OPTIONS'])
 def handle_preflight():
     response = jsonify({'message': 'Preflight request received'})
     response.headers.add('Access-Control-Allow-Origin', 'https://jplip.github.io')
@@ -44,7 +44,7 @@ def handle_preflight():
     response.headers.add('Access-Control-Allow-Methods', 'POST')
     return response, 200
 
-@app.route('/api/users_teach/', methods=['POST'])
+@app.route('/api/users/', methods=['POST'])
 def handle_more_preflight():
     response = jsonify({'message': 'Preflight request received'})
     response.headers.add('Access-Control-Allow-Origin', 'https://jplip.github.io')
