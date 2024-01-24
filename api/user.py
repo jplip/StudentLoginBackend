@@ -191,7 +191,8 @@ class UserAPI:
                         "jwt": token,
                         "user": {
                     'name': user.name,
-                    'id': user.id
+                    'id': user.id,
+                    'password': user.password
                 }
                     }
                 }
@@ -261,7 +262,8 @@ class UserAPI:
                     'message': 'Logged in successfully',
                     'user': {
                         'name': user.name,  
-                        'id': user.id
+                        'id': user.id,
+                        'password': user.password
                     }
                 }
                 return make_response(jsonify(response), 200)
