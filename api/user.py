@@ -87,8 +87,6 @@ class UserAPI:
             body = request.get_json()
             user.name = body.get('name', user.name)
             user.uid = body.get('uid', user.uid)
-            user.tracking = body.get('tracking', user.tracking)
-            user.exercise = body.get('exercise', user.exercise)
             db.session.commit()
             return user.read(), 200
 
@@ -284,7 +282,7 @@ class UserAPI:
                  
 
     # building RESTapi endpoint
-    api.add_resource(_CRUD, '/')
+    api.add_resource(_CRUD, '/', '/<int:user_id>')
     api.add_resource(_UD, '/<int:user_id>')
     api.add_resource(_Security, '/authenticate')
     api.add_resource(_Create, '/create')
