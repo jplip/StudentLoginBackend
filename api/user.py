@@ -9,6 +9,7 @@ import jwt
 from __init__ import db
 
 from datetime import datetime
+from auth_middleware import token_required
 
 from model.users import User
 
@@ -73,11 +74,11 @@ class UserAPI:
             # failure returns error
             return {'message': f'Processed {name}, either a format error or User ID {uid} is duplicate'}, 400
 
-        def get(self): # Read Method
+        @token_required
+        def get(self, current_user): # Read Method
             users = User.query.all()    # read/extract all users from database
             json_ready = [user.read() for user in users]  # prepare output in json
-            #return jsonify(json_ready)  # jsonify creates Flask response object, more specific to APIs than json.dumps 
-            return (json_ready)
+            return jsonify(json_ready)  # jsonify creates Flask response object, more specific to APIs than json.dumps
         
         def put(self, user_id):
             '''Update a user'''
