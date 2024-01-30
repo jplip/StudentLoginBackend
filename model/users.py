@@ -156,7 +156,7 @@ class User(db.Model):
 
     # CRUD update: updates user name, password, phone
     # returns self
-    def update(self, name="", uid="", password="",  exercise = "", tracking="", coins="", dob=""):
+    def update(self, name="", uid="", password="",  exercise = "", tracking="", dob=""):
         """only updates values with length"""
         if len(name) > 0:
             self.name = name
@@ -168,8 +168,6 @@ class User(db.Model):
             self.exercise = exercise
         if len(tracking) > 0:
             self.tracking = tracking 
-        if coins > 0:
-            self.coins = coins
         if dob is not None:
             self.dob = dob    
         db.session.commit()
@@ -215,7 +213,6 @@ def initUsers():
                     dob=user_data['dob'],
                     tracking=user_data['tracking'],
                     exercise=user_data['exercise'],
-                    coins=user_data['coins']
                 )
             else:
                 # Proceed with inserting the new user
