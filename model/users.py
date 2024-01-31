@@ -147,6 +147,7 @@ class User(db.Model):
             "id": self.id,
             "name": self.name,
             "uid": self.uid,
+            "password": self.password,
             "dob": self.dob,
             "age": self.age,
             "exercise": self.exercise,

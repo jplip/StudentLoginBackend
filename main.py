@@ -39,7 +39,7 @@ def table():
 @app.route('/api/users/create', methods=['OPTIONS'])
 def handle_preflight():
     response = jsonify({'message': 'Preflight request received'})
-    response.headers.add('Access-Control-Allow-Origin', 'https://jplip.github.io')
+    response.headers.add('Access-Control-Allow-Origin', 'https://jplip.github.io, http://127.0.0.1:4100')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
     response.headers.add('Access-Control-Allow-Methods', 'POST')
     return response, 200
@@ -47,7 +47,7 @@ def handle_preflight():
 @app.route('/api/users/', methods=['POST'])
 def handle_more_preflight():
     response = jsonify({'message': 'Preflight request received'})
-    response.headers.add('Access-Control-Allow-Origin', 'https://jplip.github.io')
+    response.headers.add('Access-Control-Allow-Origin', 'https://jplip.github.io, http://127.0.0.1:4100')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
     response.headers.add('Access-Control-Allow-Methods', 'POST')
     return response, 200

@@ -3,11 +3,10 @@ from flask import Blueprint, request, jsonify,  make_response
 from flask_restful import Api, Resource # used for REST API building
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.security import check_password_hash
-from flask import request, Response, current_app
-from flask_restful import Resource
-import jwt
+
 
 from datetime import datetime
+from auth_middleware import token_required
 
 from model.users import User
 
@@ -72,11 +71,32 @@ class UserAPI:
             # failure returns error
             return {'message': f'Processed {name}, either a format error or User ID {uid} is duplicate'}, 400
 
-        def get(self): # Read Method
+        @token_required
+        def get(self, current_user): # Read Method
             users = User.query.all()    # read/extract all users from database
             json_ready = [user.read() for user in users]  # prepare output in json
-            #return jsonify(json_ready)  # jsonify creates Flask response object, more specific to APIs than json.dumps 
-            return (json_ready) 
+            return jsonify(json_ready)  # jsonify creates Flask response object, more specific to APIs than json.dumps
+        
+        def put(self, user_id):
+            '''Update a user'''
+            user = User.query.get(user_id)
+            if not user:
+                return {'message': 'User not found'}, 404
+            body = request.get_json()
+            user.name = body.get('name', user.name)
+            user.uid = body.get('uid', user.uid)
+            db.session.commit()
+            return user.read(), 200
+
+        def delete(self, user_id):
+            '''Delete a user'''
+            user = User.query.get(user_id)
+            if not user:
+                return {'message': 'User not found'}, 404
+            db.session.delete(user)
+            db.session.commit()
+            return {'message': 'User deleted'}, 200
+        
     class _UD(Resource):        
         def put(self, user_id):
             body = request.get_json()
@@ -135,90 +155,51 @@ class UserAPI:
             # failure returns error
             return {'message': f'Processed {name}, either a format error or User ID {uid} is duplicate'}, 400
 
-   
-
-# ... (previous code)
- 
-# ... (previous code)
+        
     class _Security(Resource):
         def post(self):
-            try:
-                body = request.get_json()
-
-                if not body:
-                    return jsonify({
-                        "message": "Please provide user details",
-                        "data": None,
-                        "error": "Bad request"
-                    }), 400
-
-                uid = body.get('uid')
-                password = body.get('password')
-
-                if uid is None or password is None:
-                    return jsonify({'message': 'User ID or password is missing'}), 400
-
-                user = User.query.filter_by(_uid=uid).first()
-
-                if not user or not user.is_password(password):
-                    return jsonify({'message': "Invalid user ID or password"}), 400
-
-                token = self.generate_token(user)
-
-                # Additional response data
-                
-                print("User Object:", user)
-                response_data = {
-                    "message": f"Authentication for {user._uid} successful",
-                    "data": {
-                        "jwt": token,
-                        "user": {
-                    'name': user.name,
-                    'id': user.id
-                }
-                    }
-                }
-
-                resp = jsonify(response_data)
-                resp.set_cookie("jwt", token,
-                                max_age=3600,
-                                secure=True,
-                                httponly=True,
-                                path='/'
-                                )
-
-                return resp
-
-            except Exception as e:
-                return jsonify({
-                    "message": "Something went wrong!",
-                    "error": str(e),
-                    "data": None
-                }), 500
-
-        def generate_token(self, user):
-            try:
-                token = jwt.encode(
-                    {"_uid": user._uid},
-                    current_app.config["SECRET_KEY"],
-                    algorithm="HS256"
-                )
-                return token
-            except Exception as e:
-                return jsonify({
-                    "error": "Something went wrong during token generation",
-                    "message": str(e)
-                }), 500
-
-
-
-
-     
-
-
-    
-
+            ''' Read data for json body '''
+            body = request.get_json()
+            
+            ''' Get Data '''
+            uid = body.get('uid')
+            if uid is None or len(uid) < 2:
+                return {'message': f'User ID is missing, or is less than 2 characters'}, 400
+            password = body.get('password')
+            
+            ''' Find user '''
+            user = User.query.filter_by(_uid=uid).first()
+            if user is None or not user.is_password(password):
+                return {'message': f"Invalid user id or password"}, 400
+            
+            ''' authenticated user '''
+            login_user(user)
+            return jsonify(user.read())
         
+    # class LoginAPI(Resource):
+    #     def post(self):
+    #         data = request.get_json()
+
+    #         # Retrieve uid and password from the request data
+    #         uid = data.get('uid')
+    #         password = data.get('password')
+
+    #         # Check if uid and password are provided
+    #         if not uid or not password:
+    #             response = {'message': 'Invalid credentials'}
+    #             return make_response(jsonify(response), 401)
+
+    #         # Retrieve user by uid from the database
+    #         user = User.query.filter_by(_uid=uid).first()
+
+    #         # Check if the user exists and the password is correct
+    #         if user and user.is_password(password):
+    #             # Perform login operations here (if needed)
+                
+    #             return make_response(jsonify(response), 200)
+
+    #         response = {'message': 'Invalid UID or password'}
+    #         return make_response(jsonify(response), 401)
     class LoginAPI(Resource):
         def post(self):
             data = request.get_json()
@@ -244,7 +225,8 @@ class UserAPI:
                     'message': 'Logged in successfully',
                     'user': {
                         'name': user.name,  
-                        'id': user.id
+                        'id': user.id,
+                        'password': user.password
                     }
                 }
                 return make_response(jsonify(response), 200)
@@ -265,7 +247,7 @@ class UserAPI:
                  
 
     # building RESTapi endpoint
-    api.add_resource(_CRUD, '/')
+    api.add_resource(_CRUD, '/', '/<int:user_id>')
     api.add_resource(_UD, '/<int:user_id>')
     api.add_resource(_Security, '/authenticate')
     api.add_resource(_Create, '/create')
