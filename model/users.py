@@ -21,6 +21,7 @@ class User(db.Model):
     _exercise = db.Column(db.JSON, nullable=True)
     _tracking = db.Column(db.JSON, nullable=True)
     _coins = db.Column(db.Integer, nullable=True)
+   
 
 #If When I change the schema (aka add a field)….  I delete the .db file as it will generate when it does not exist.
 #Do not have a underscore in a website name 
