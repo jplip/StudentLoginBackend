@@ -89,7 +89,7 @@ class UserAPI:
             user.uid = body.get('uid', user.uid)
             db.session.commit()
             return user.read(), 200
-
+        @token_required("Admin")
         def delete(self, user_id):
             '''Delete a user'''
             user = User.query.get(user_id)

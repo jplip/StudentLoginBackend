@@ -21,6 +21,8 @@ class User(db.Model):
     _exercise = db.Column(db.JSON, nullable=True)
     _tracking = db.Column(db.JSON, nullable=True)
     _coins = db.Column(db.Integer, nullable=True)
+    _role = db.Column(db.String(20), default="User", nullable=False)
+
 
 #If When I change the schema (aka add a field)….  I delete the .db file as it will generate when it does not exist.
 #Do not have a underscore in a website name 
@@ -28,7 +30,7 @@ class User(db.Model):
    # trackers = db.relationship("Tracker", cascade='all, delete', backref='users', lazy=True)
 
     # constructor of a User object, initializes the instance variables within object (self)
-    def __init__(self, name, uid, exercise, tracking, dob,  coins,  password="123qwerty" ):
+    def __init__(self, name, uid, exercise, tracking, dob,  coins, role,   password="123qwerty" ):
         self._name = name    # variables with self prefix become part of the object, 
         self._uid = uid
         self._tracking = tracking
