@@ -21,6 +21,9 @@ class User(db.Model):
     _exercise = db.Column(db.JSON, nullable=True)
     _tracking = db.Column(db.JSON, nullable=True)
     _coins = db.Column(db.Integer, nullable=True)
+    _role = db.Column(db.String(20), default = "User", nullable = False)
+
+    posts = db.relationship('Post', backref='user', lazy=True)
 
 #If When I change the schema (aka add a field)….  I delete the .db file as it will generate when it does not exist.
 #Do not have a underscore in a website name 
@@ -28,7 +31,7 @@ class User(db.Model):
    # trackers = db.relationship("Tracker", cascade='all, delete', backref='users', lazy=True)
 
     # constructor of a User object, initializes the instance variables within object (self)
-    def __init__(self, name, uid, exercise, tracking, dob,  coins,  password="123qwerty" ):
+    def __init__(self, name, uid, exercise, tracking, dob,  coins,  password="123qwerty", role ="User" ):
         self._name = name    # variables with self prefix become part of the object, 
         self._uid = uid
         self._tracking = tracking
@@ -37,6 +40,7 @@ class User(db.Model):
         self._exercise = exercise
         self._tracking = tracking
         self._coins = coins
+        self._role = role
 
 
     # a name getter method, extracts name from object
@@ -88,6 +92,13 @@ class User(db.Model):
     @dob.setter
     def dob(self, dob):
         self._dob = dob
+    
+    @property
+    def role(self):
+        return self._role
+
+    def is_admin(self):
+        return self._role == "Admin"
     
     @property
     def tracking(self):
@@ -152,7 +163,8 @@ class User(db.Model):
             "age": self.age,
             "exercise": self.exercise,
             "tracking": self.tracking,
-            "coins": self.coins
+            "coins": self.coins,
+            "role" : self.roles
         }
 
     # CRUD update: updates user name, password, phone
@@ -199,7 +211,7 @@ def initUsers():
             {'name': 'Thomas Edison', 'uid': 'toby', 'password': '123toby', 'dob': date(1847, 2, 11),
              'tracking': '{"userName":"Thomas Edison","instrumentName": "Piano", "practiceDate": "21-Oct-2023", "practiceTime": "30" }',
              'exercise': '{"userName":"Thomas Edison","instrumentName": "Piano", "practiceDate": "21-Oct-2023", "practiceTime": "30" }',
-             'coins': 0},
+             'coins': 0, 'role':'User'},
             # Add more user data as needed
         ]
 
@@ -216,7 +228,8 @@ def initUsers():
                     dob=user_data['dob'],
                     tracking=user_data['tracking'],
                     exercise=user_data['exercise'],
-                    coins=user_data['coins']
+                    coins=user_data['coins'],
+                    role = user_data['roles']
                 )
             else:
                 # Proceed with inserting the new user
@@ -227,7 +240,8 @@ def initUsers():
                     dob=user_data['dob'],
                     tracking=user_data['tracking'],
                     exercise=user_data['exercise'],
-                    coins=user_data['coins']
+                    coins=user_data['coins'],
+                    role = user_data['roles']
                 )
                 db.session.add(new_user)
 

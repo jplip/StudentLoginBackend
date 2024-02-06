@@ -23,6 +23,12 @@ def token_required(f):
                 "data": None,
                 "error": "Unauthorized"
             }, 401
+            if roles and current_user.role not in roles:
+                return {
+                    "message": "Insufficient permissions. Required roles: {}".format(roles),
+                    "data": None,
+                    "error": "Forbidden"
+                }, 403
         except Exception as e:
             return {
                 "message": "Something went wrong",
