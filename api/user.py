@@ -202,7 +202,8 @@ class UserAPI:
                                 max_age=3600,
                                 secure=True,
                                 httponly=True,
-                                path='/'
+                                path='/',
+                                samesite='None'
                                 )
 
                 return resp

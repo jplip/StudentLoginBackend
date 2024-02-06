@@ -11,7 +11,7 @@ These object can be used throughout project.
 
 # Setup of key Flask object (app)
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "https://jplip.github.io"}})
+CORS(app, resources={r"/api/*": {"origins": "https://jplip.github.io"}}, supports_credentials=True)
 # Setup SQLAlchemy object and properties for the database (db)
 dbURI = 'sqlite:///volumes/sqlite.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
