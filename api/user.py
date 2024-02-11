@@ -6,10 +6,8 @@ from werkzeug.security import check_password_hash
 from flask import request, Response, current_app
 from flask_restful import Resource
 import jwt
-from __init__ import db
 
 from datetime import datetime
-from auth_middleware import token_required
 
 from model.users import User
 
@@ -23,7 +21,7 @@ class UserAPI:
     class _CRUD(Resource):  # User API operation for Create, Read.  THe Update, Delete methods need to be implemented
         def post(self): # Create method
             ''' Read data for json body '''
-            body = request.get_json() 
+            body = request.get_json()
             
             ''' Avoid garbage in, error checking '''
             # validate name
@@ -73,32 +71,58 @@ class UserAPI:
                 return user.read()
             # failure returns error
             return {'message': f'Processed {name}, either a format error or User ID {uid} is duplicate'}, 400
+
         def get(self): # Read Method
             users = User.query.all()    # read/extract all users from database
             json_ready = [user.read() for user in users]  # prepare output in json
-            return jsonify(json_ready)  # jsonify creates Flask response object, more specific to APIs than json.dumps
-        
+            #return jsonify(json_ready)  # jsonify creates Flask response object, more specific to APIs than json.dumps 
+            return (json_ready) 
+    class _UD(Resource):        
         def put(self, user_id):
-            '''Update a user'''
-            user = User.query.get(user_id)
-            if not user:
-                return {'message': 'User not found'}, 404
             body = request.get_json()
-            user.name = body.get('name', user.name)
-            user.uid = body.get('uid', user.uid)
-            db.session.commit()
-            return user.read(), 200
-
-        def delete(self, user_id):
-            '''Delete a user'''
+            user_id = body.get('id')
+            if user_id is None:
+                return {'message': 'Id not found.'}, 400
+            user = User.query.filter_by(id=user_id).first()  # Use filter_by to query by UID
+            if user:
+                if 'exercise' and 'tracking' in body:
+                     user.exercise = body['exercise']
+                     user.update()
+                     user.tracking = body['tracking']
+                     user.update() 
+                     return user.read()
+                return {'message': 'You may only update tracking or exercise'}, 400
+            return {'message': 'User not found.'}, 404    
+        def get(self, user_id):
+            user = User.query.filter_by(id=user_id).first()
+            if user:
+                return user.read()  # Assuming you have a 'read' method in your User model
+            return {'message': 'User not found.'}, 404
+        def patch(self, user_id):
+            '''Update user name'''
             user = User.query.get(user_id)
             if not user:
                 return {'message': 'User not found'}, 404
-            db.session.delete(user)
-            db.session.commit()
-            return {'message': 'User deleted'}, 200
 
-                    
+            body = request.get_json()
+            new_name = body.get('name')
+            
+            if new_name is not None:
+                user.name = new_name
+                return user.read(), 200
+            else:
+                return {'message': 'Name not provided or invalid'}, 400
+            # body = request.get_json()
+            # user_id = body.get('uid')
+            # if user_id is None:
+            #     return {'message': 'Id not found.'}, 400
+            # user = User.query.get(id = user_id)
+            # if body.get('tracking'):
+            #     user.update(tracking = body.get('tracking')) 
+            #     #return jsonify(user.read())
+            #     return user.read()
+            # return {'message': 'You may only update tracking.'}, 400
+
     class _Create(Resource):
         def post(self):
             body = request.get_json()
@@ -123,31 +147,12 @@ class UserAPI:
                 return user.read()
             # failure returns error
             return {'message': f'Processed {name}, either a format error or User ID {uid} is duplicate'}, 400
-        
-        
-    class _UD(Resource):
-            def get(self, user_id):
-                user = User.query.filter_by(id=user_id).first()
-                if user:
-                    return user.read()  # Assuming you have a 'read' method in your User model
-                return {'message': 'User not found.'}, 404        
-            def put(self, user_id):
-                body = request.get_json()
-                user_id = body.get('id')
-                if user_id is None:
-                    return {'message': 'Id not found.'}, 400
-                user = User.query.filter_by(id=user_id).first()  # Use filter_by to query by UID
-                if user:
-                    if 'exercise' and 'tracking' in body:
-                        user.exercise = body['exercise']
-                        user.update()
-                        user.tracking = body['tracking']
-                        user.update() 
-                        return user.read()
-                    return {'message': 'You may only update tracking or exercise'}, 400
-                return {'message': 'User not found.'}, 404    
-           
 
+   
+
+    
+ 
+# ... (previous code)
     class _Security(Resource):
         def post(self):
             try:
@@ -182,8 +187,7 @@ class UserAPI:
                         "jwt": token,
                         "user": {
                     'name': user.name,
-                    'id': user.id,
-                    'password': user.password
+                    'id': user.id
                 }
                     }
                 }
@@ -228,54 +232,13 @@ class UserAPI:
     
 
         
-    class LoginAPI(Resource):
-        def post(self):
-            data = request.get_json()
+    
 
-            # Retrieve uid and password from the request data
-            uid = data.get('uid')
-            password = data.get('password')
-
-            # Check if uid and password are provided
-            if not uid or not password:
-                response = {'message': 'Invalid credentials'}
-                return make_response(jsonify(response), 401)
-
-            # Retrieve user by uid from the database
-            user = User.query.filter_by(_uid=uid).first()
-
-            # Check if the user exists and the password is correct
-            if user and user.is_password(password):
-         
-
-                # Construct the response with the user's name included
-                response = {
-                    'message': 'Logged in successfully',
-                    'user': {
-                        'name': user.name,  
-                        'id': user.id,
-                        'password': user.password
-                    }
-                }
-                return make_response(jsonify(response), 200)
-
-            response = {'message': 'Invalid UID or password'}
-            return make_response(jsonify(response), 401)
-
-
-
-    class LogoutAPI(Resource):
-        @login_required
-        def post(self):
-            logout_user()
-            return {'message': 'Logged out successfully'}, 200
-            
-   
 
                  
 
     # building RESTapi endpoint
-    api.add_resource(_CRUD, '/', '/<int:user_id>')
+    api.add_resource(_CRUD, '/')
     api.add_resource(_UD, '/<int:user_id>')
     api.add_resource(_Security, '/authenticate')
     api.add_resource(_Create, '/create')
