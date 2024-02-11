@@ -23,7 +23,7 @@ class UserAPI:
     class _CRUD(Resource):  # User API operation for Create, Read.  THe Update, Delete methods need to be implemented
         def post(self): # Create method
             ''' Read data for json body '''
-            body = request.get_json()
+            body = request.get_json() 
             
             ''' Avoid garbage in, error checking '''
             # validate name
@@ -73,7 +73,6 @@ class UserAPI:
                 return user.read()
             # failure returns error
             return {'message': f'Processed {name}, either a format error or User ID {uid} is duplicate'}, 400
-        @token_required
         def get(self): # Read Method
             users = User.query.all()    # read/extract all users from database
             json_ready = [user.read() for user in users]  # prepare output in json
@@ -98,40 +97,8 @@ class UserAPI:
             db.session.delete(user)
             db.session.commit()
             return {'message': 'User deleted'}, 200
-        
-    class _UD(Resource):        
-        def put(self, user_id):
-            body = request.get_json()
-            user_id = body.get('id')
-            if user_id is None:
-                return {'message': 'Id not found.'}, 400
-            user = User.query.filter_by(id=user_id).first()  # Use filter_by to query by UID
-            if user:
-                if 'exercise' and 'tracking' in body:
-                     user.exercise = body['exercise']
-                     user.update()
-                     user.tracking = body['tracking']
-                     user.update() 
-                     return user.read()
-                return {'message': 'You may only update tracking or exercise'}, 400
-            return {'message': 'User not found.'}, 404    
-        def get(self, user_id):
-            user = User.query.filter_by(id=user_id).first()
-            if user:
-                return user.read()  # Assuming you have a 'read' method in your User model
-            return {'message': 'User not found.'}, 404
-            
-            # body = request.get_json()
-            # user_id = body.get('uid')
-            # if user_id is None:
-            #     return {'message': 'Id not found.'}, 400
-            # user = User.query.get(id = user_id)
-            # if body.get('tracking'):
-            #     user.update(tracking = body.get('tracking')) 
-            #     #return jsonify(user.read())
-            #     return user.read()
-            # return {'message': 'You may only update tracking.'}, 400
 
+                    
     class _Create(Resource):
         def post(self):
             body = request.get_json()
@@ -156,6 +123,30 @@ class UserAPI:
                 return user.read()
             # failure returns error
             return {'message': f'Processed {name}, either a format error or User ID {uid} is duplicate'}, 400
+        
+        
+    class _UD(Resource):
+            def get(self, user_id):
+                user = User.query.filter_by(id=user_id).first()
+                if user:
+                    return user.read()  # Assuming you have a 'read' method in your User model
+                return {'message': 'User not found.'}, 404        
+            def put(self, user_id):
+                body = request.get_json()
+                user_id = body.get('id')
+                if user_id is None:
+                    return {'message': 'Id not found.'}, 400
+                user = User.query.filter_by(id=user_id).first()  # Use filter_by to query by UID
+                if user:
+                    if 'exercise' and 'tracking' in body:
+                        user.exercise = body['exercise']
+                        user.update()
+                        user.tracking = body['tracking']
+                        user.update() 
+                        return user.read()
+                    return {'message': 'You may only update tracking or exercise'}, 400
+                return {'message': 'User not found.'}, 404    
+           
 
     class _Security(Resource):
         def post(self):
