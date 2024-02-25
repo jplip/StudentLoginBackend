@@ -20,7 +20,7 @@ class User(db.Model):
     _dob = db.Column(db.String)
     _exercise = db.Column(db.JSON, nullable=True)
     _tracking = db.Column(db.JSON, nullable=True)
-    _coins = db.Column(db.Integer, nullable=True)
+    _coins = db.Column(db.String, nullable=True)
    
 
 #If When I change the schema (aka add a field)….  I delete the .db file as it will generate when it does not exist.
@@ -170,7 +170,7 @@ class User(db.Model):
             self.exercise = exercise
         if len(tracking) > 0:
             self.tracking = tracking 
-        if coins > 0:
+        if len(coins) > 0:
             self.coins = coins
         if dob is not None:
             self.dob = dob    
@@ -184,6 +184,13 @@ class User(db.Model):
         db.session.delete(self)
         db.session.commit()
         return None
+    
+    def updatename(self, new_name=None):
+        if new_name is not None:
+            self.name = new_name
+            db.session.commit()
+
+
 
 
 """Database Creation and Testing """
@@ -200,7 +207,7 @@ def initUsers():
             {'name': 'Thomas Edison', 'uid': 'toby', 'password': '123toby', 'dob': date(1847, 2, 11),
              'tracking': '{"userName":"Thomas Edison","instrumentName": "Piano", "practiceDate": "21-Oct-2023", "practiceTime": "30" }',
              'exercise': '{"userName":"Thomas Edison","instrumentName": "Piano", "practiceDate": "21-Oct-2023", "practiceTime": "30" }',
-             'coins': 0},
+             'coins': "8"},
             # Add more user data as needed
         ]
 

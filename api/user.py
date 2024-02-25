@@ -1,6 +1,6 @@
 import json
 from flask import Blueprint, request, jsonify,  make_response
-from flask_restful import Api, Resource # used for REST API building
+from flask_restful import Api, Resource, reqparse # used for REST API building
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.security import check_password_hash
 from flask import request, Response, current_app
@@ -98,30 +98,19 @@ class UserAPI:
             if user:
                 return user.read()  # Assuming you have a 'read' method in your User model
             return {'message': 'User not found.'}, 404
-        def patch(self, user_id):
-            '''Update user name'''
+        def patch(self, user_id):    
             user = User.query.get(user_id)
             if not user:
                 return {'message': 'User not found'}, 404
-
-            body = request.get_json()
-            new_name = body.get('name')
-            
-            if new_name is not None:
-                user.name = new_name
+            parser = reqparse.RequestParser()
+            parser.add_argument('name', type=str, required=True, help='New name is required')
+            args = parser.parse_args()
+            try:
+                user.updatename(new_name=args['name'])
                 return user.read(), 200
-            else:
-                return {'message': 'Name not provided or invalid'}, 400
-            # body = request.get_json()
-            # user_id = body.get('uid')
-            # if user_id is None:
-            #     return {'message': 'Id not found.'}, 400
-            # user = User.query.get(id = user_id)
-            # if body.get('tracking'):
-            #     user.update(tracking = body.get('tracking')) 
-            #     #return jsonify(user.read())
-            #     return user.read()
-            # return {'message': 'You may only update tracking.'}, 400
+            except Exception as e:
+                # Handle the exception (e.g., log the error or return an error response)
+                return {'message': f'Error updating name: {str(e)}'}, 500
 
     class _Create(Resource):
         def post(self):
