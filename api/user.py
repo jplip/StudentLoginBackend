@@ -6,6 +6,7 @@ from werkzeug.security import check_password_hash
 from flask import request, Response, current_app
 from flask_restful import Resource
 import jwt
+from __init__ import db
 
 from datetime import datetime
 
@@ -76,7 +77,30 @@ class UserAPI:
             users = User.query.all()    # read/extract all users from database
             json_ready = [user.read() for user in users]  # prepare output in json
             #return jsonify(json_ready)  # jsonify creates Flask response object, more specific to APIs than json.dumps 
-            return (json_ready) 
+            return (json_ready)
+        
+        def put(self, user_id):
+            '''Update a user'''
+            user = User.query.get(user_id)
+            if not user:
+                return {'message': 'User not found'}, 404
+            body = request.get_json()
+            user.name = body.get('name', user.name)
+            user.uid = body.get('uid', user.uid)
+            user.tracking = body.get('tracking', user.tracking)
+            user.exercise = body.get('exercise', user.exercise)
+            db.session.commit()
+            return user.read(), 200
+
+        def delete(self, user_id):
+            '''Delete a user'''
+            user = User.query.get(user_id)
+            if not user:
+                return {'message': 'User not found'}, 404
+            db.session.delete(user)
+            db.session.commit()
+            return {'message': 'User deleted'}, 200
+        
     class _UD(Resource):        
         def put(self, user_id):
             body = request.get_json()
