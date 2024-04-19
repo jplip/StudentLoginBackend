@@ -10,7 +10,7 @@ from __init__ import app, db, cors  # Definitions initialization
 
 
 # setup APIs
-from user import user_api # Blueprint import api definition
+from api.user import user_api # Blueprint import api definition
 # database migrations
 from model.users import initUsers
 

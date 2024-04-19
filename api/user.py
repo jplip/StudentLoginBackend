@@ -5,7 +5,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.security import check_password_hash
 from flask import request, Response, current_app
 from flask_restful import Resource
-import PyJWT as jwt
+import jwt
 from __init__ import db
 
 from datetime import datetime
