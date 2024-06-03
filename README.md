@@ -1,10 +1,10 @@
-# Instrument Pratice Tracker
+# Fitness Tracker
 
-> This serves serves as the backend locally running serving for our Instrument Practice Tracker. 
+> This serves serves as the backend locally running serving for our Futness Tracker Practice Tracker. 
 
 ## Idea
 
-> The purpose of project is to serve APIs.  It is the backend piece of a Full-Stack project to get data from the frontend and create users based on that data and being able to update data (frontend) of an Instrument Practice Tracker
+> The purpose of project is to serve APIs.  It is the backend piece of a Full-Stack project to get data from the frontend and create users based on that data and being able to update data (frontend) of an Fitness Practice Tracker
 
 ### Files and Directories in this Project
 
